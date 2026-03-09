@@ -1,5 +1,6 @@
 import { CanvasState, HistoryState, Widget } from '@/types';
 
+
 // ─── Default canvas state ─────────────────────────────────────────────────────
 
 const defaultCanvas: CanvasState = {
@@ -101,3 +102,98 @@ function applyAction(
       return state;
   }
 }
+
+// ─── Zustand canvas store ─────────────────────────────────────────────────────
+
+export const useCanvasStore = create<CanvasStore>()(set => ({
+  // Initial state
+  past: [],
+  present: defaultCanvas,
+  future: [],
+
+  // Selection — never goes into history
+ selectWidget: (id: string | null) =>
+    set((s) => ({
+      present: applyAction(s.present, { type: 'SELECT', payload: id }),
+    })),
+
+  // Add — pushes to history
+ addWidget: (widget: Widget) =>
+    set((s) => ({
+      past: [...s.past.slice(-30), s.present],
+      present: applyAction(s.present, { type: 'ADD', payload: widget }),
+      future: [],
+    })),
+
+  // Move — pushes to history
+ moveWidget: (id: string, x: number, y: number) =>
+    set((s) => ({
+      past: [...s.past.slice(-30), s.present],
+      present: applyAction(s.present, { type: 'MOVE', payload: { id, x, y } }),
+      future: [],
+    })),
+
+  // Resize — pushes to history
+  resizeWidget: (id: string, width: number, height: number) =>
+    set((s) => ({
+      past: [...s.past.slice(-30), s.present],
+      present: applyAction(s.present, { type: 'RESIZE', payload: { id, width, height } }),
+      future: [],
+    })),
+
+  // Update — pushes to history
+ updateWidget: (id: string, patch: Partial<Widget>) =>
+    set((s) => ({
+      past: [...s.past.slice(-30), s.present],
+      present: applyAction(s.present, { type: 'UPDATE', payload: { id, patch } }),
+      future: [],
+    })),
+
+  // Delete — pushes to history
+ deleteWidget: (id: string) =>
+    set((s) => ({
+      past: [...s.past.slice(-30), s.present],
+      present: applyAction(s.present, { type: 'DELETE', payload: id }),
+      future: [],
+    })),
+
+  // Undo
+  undo: () =>
+    set((s) => {
+      if (s.past.length === 0) return s;
+      const previous = s.past[s.past.length - 1];
+      return {
+        past: s.past.slice(0, -1),
+        present: previous,
+        future: [s.present, ...s.future],
+      };
+    }),
+
+  // Redo
+  redo: () =>
+    set((s) => {
+      if (s.future.length === 0) return s;
+      const next = s.future[0];
+      return {
+        past: [...s.past, s.present],
+        present: next,
+        future: s.future.slice(1),
+      };
+    }),
+
+  // Load saved layout
+  loadWidgets: (widgets: Widget[]) =>
+    set((s) => ({
+      past: [...s.past.slice(-30), s.present],
+      present: applyAction(s.present, { type: 'LOAD', payload: widgets }),
+      future: [],
+    })),
+
+  // Clear canvas
+  clearCanvas: () =>
+    set((s) => ({
+      past: [...s.past.slice(-30), s.present],
+      present: defaultCanvas,
+      future: [],
+    })),
+}));
