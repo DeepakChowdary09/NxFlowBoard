@@ -1,5 +1,5 @@
-import { CanvasState, HistoryState, Widget } from '@/types';
-
+import { CanvasState, DataState, HistoryState, Widget } from '@/types';
+import { create } from 'zustand';
 
 // ─── Default canvas state ─────────────────────────────────────────────────────
 
@@ -196,4 +196,60 @@ export const useCanvasStore = create<CanvasStore>()(set => ({
       present: defaultCanvas,
       future: [],
     })),
+}));
+
+
+// ─── Data store ───────────────────────────────────────────────────────────────
+
+interface DataActions {
+  setBinding: (widgetId: string, url: string) => void;
+  setStatus: (widgetId: string, status: 'idle' | 'loading' | 'success' | 'error') => void;
+  setData: (widgetId: string, data: unknown[]) => void;
+  setError: (widgetId: string, error: string) => void;
+  removeBinding: (widgetId: string) => void;
+}
+
+interface DataStore extends DataState, DataActions {}
+
+
+export const useDataStore = create<DataStore>()(set => ({
+  bindings: {},
+
+  setBinding: (widgetId: string, url: string) =>
+    set((s: DataStore) => ({
+      bindings: {
+        ...s.bindings,
+        [widgetId]: { widgetId, url, status: 'idle', data: [], error: null },
+      },
+    })),
+
+  setStatus: (widgetId: string, status: 'idle' | 'loading' | 'success' | 'error') =>
+    set((s: DataStore) => ({
+      bindings: {
+        ...s.bindings,
+        [widgetId]: { ...s.bindings[widgetId], status },
+      },
+    })),
+
+  setData: (widgetId: string, data: unknown[]) =>
+    set((s: DataStore) => ({
+      bindings: {
+        ...s.bindings,
+        [widgetId]: { ...s.bindings[widgetId], status: 'success', data, error: null },
+      },
+    })),
+
+  setError: (widgetId: string, error: string) =>
+    set((s: DataStore) => ({
+      bindings: {
+        ...s.bindings,
+        [widgetId]: { ...s.bindings[widgetId], status: 'error', error },
+      },
+    })),
+
+  removeBinding: (widgetId: string) =>
+    set((s: DataStore) => {
+      const { [widgetId]: _, ...rest } = s.bindings;
+      return { bindings: rest };
+    }),
 }));
