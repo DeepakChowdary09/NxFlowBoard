@@ -12,7 +12,7 @@ export interface Size {
 
 }
 
-// ─── Per-widget config shapes─────────────────────────────
+
 
 export interface KPIConfig{
   value: string;
