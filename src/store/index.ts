@@ -33,6 +33,7 @@ interface CanvasStore extends HistoryState, CanvasActions {}
 
 
 
+// ─── Pure reducer ─────────────────────────────────────────────────────────────
 function applyAction(
   state: CanvasState,
   action: { type: string; payload: unknown }
