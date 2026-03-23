@@ -10,7 +10,7 @@ const defaultCanvas: CanvasState = {
 // ─── Canvas + History actions ─────────────────────────────────────────────────
 
 interface CanvasActions {
- 
+  // Selection
   selectWidget: (id: string | null) => void;
 
   // Widget CRUD
