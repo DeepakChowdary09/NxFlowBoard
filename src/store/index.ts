@@ -7,7 +7,7 @@ const defaultCanvas: CanvasState = {
   selectedId: null,
 };
 
-
+// ─── Canvas + History actions ─────────────────────────────────────────────────
 
 interface CanvasActions {
   // Selection
