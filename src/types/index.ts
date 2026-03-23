@@ -43,7 +43,7 @@ export interface GaugeConfig {
   max : number;
 }
 
-// ─── Discriminated union ────────────────────────
+
 
 export type WidgetConfig = 
   | { type: 'kpi';   config: KPIConfig }
